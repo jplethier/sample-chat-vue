@@ -1,7 +1,55 @@
 (function () {
+  var channel = 'myChannel'
+
+  var pubNubSettings = {
+    channels: [channel]
+  }
+
+  pubNubSettings.history = {
+    channel: channel,
+    count: 20
+  }
+
+  var pubNub = new PubNub({
+    publishKey: 'pub-c-9aca2794-bfde-4d6c-864e-41e8299df324',
+    subscribeKey: 'sub-c-99fedc28-544d-11e7-995f-02ee2ddab7fe'
+  })
+
   var states = {
     name: '',
     messages: []
+  }
+
+  function pushMessage(chatMessage) {
+    if(chatMessage == undefined) {
+      return false;
+    }
+    var type = chatMessage.name == states.name ? 'sent' : 'received';
+    var name = type == 'sent' ? states.name : chatMessage.name;
+    states.messages.push({
+      name: name,
+      text: chatMessage.text,
+      type: type
+    })
+  }
+
+  function initPubNub() {
+    pubNub.addListener({
+      message: function(data) {
+        pushMessage(data.message)
+      }
+    })
+
+    pubNub.subscribe({
+      channels: pubNubSettings.channels,
+    })
+
+    pubNub.history(pubNubSettings.history, function(status, response) {
+      var history = response.messages;
+      for (var i = 0; i < history.length; i++) {
+        pushMessage(history[i].entry)
+      }
+    })
   }
 
   function init() {
@@ -19,7 +67,13 @@
           if(text.trim().length === 0) {
             return
           }
-          // TODO
+          pubNub.publish({
+            channel: channel,
+            message: {
+              text: text,
+              name: this.name
+            }
+          })
           if (typeof clear == 'function') {
             clear()
           }
@@ -42,6 +96,7 @@
 
           this.messages.length = 0
           this.$f7.mainView.router.load({ url: '/chat/' })
+          initPubNub();
         }
       },
       framework7: {

@@ -41,12 +41,13 @@
   <template id="page-chat">
     <f7-page>
       <f7-messages>
-        <f7-message v-for="msg in messages" :name="message.name" :text="message.text" :type="message.type" ></f7-message>
+        <f7-message v-for="message in messages" :name="message.name" :text="message.text" :type="message.type" ></f7-message>
       </f7-messages>
       <f7-messagebar placeholder="Message" send-link="Send" v-on:submit="onSend" ></f7-messagebar>
     </f7-page>
   </template>
 
+  <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.10.0.js"></script>
   <script src="cordova.js"></script>
   <script src="js/framework7.min.js"></script>
   <script src="js/vue.min.js"></script>
